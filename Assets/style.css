@@ -1,0 +1,155 @@
+body {
+    background: linear-gradient(0deg,#615878,#615878 20%,#464161 60%,#313050 90%,#313050);
+    color: #ffffff; /* Text color for better readability on dark background */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.search-bar {
+    background-color: #313050; 
+    padding: 10px;
+    text-align: center;
+    top: 0;
+    position: fixed;
+    left: 0;
+    right: 0;
+}
+
+.navbar {
+    overflow: hidden;
+    background-color: #1d1d32;
+    position: fixed;
+    width: 100%;
+    top: 80px;
+    left: 0%;
+}
+.navbar a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    width: 33.33%; /* Set each link to take up one-third of the width */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+
+
+.search-container {
+    display: flex;
+    justify-content: center;
+}
+
+
+
+#cityInput {
+    height: 5px;
+    background: hsla(0, 0%, 100%, 0.2);
+    width: 300px;
+    padding: 15px;
+    font-size: 18px;
+    border: 3px hsla(0, 0%, 100%, 0.2);
+    border-radius: 50px;
+    outline: none;
+    margin: 10px auto; /* Set margin to auto and remove margin-bottom */
+    margin-top: 10px;
+    text-align: center; /* Center the text within the input field */
+}
+
+
+#cityInput:focus {
+    border-color: #fff;
+}
+
+button {
+    padding: 10px;
+    font-size: 16px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#searchIcon {
+    position: absolute;
+    right: 575px; /* Adjust the right position as needed */
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Center vertically */
+    color: #000000;
+    cursor: pointer;
+}
+
+.forecast-section {
+    position: relative; /* Set the position of the forecast-section to relative */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #6b38ab;
+    padding: 50px 20px 20px; /* Add extra padding at the top */
+    width: 800px;
+    height: 223px;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+
+.city {
+    
+    position: absolute; /* Set the position of the city section to absolute */
+    top: -12.94px; /* Align the city section to the top of the forecast-section */
+    left: 0; /* Align the city section to the left of the forecast-section */
+    border-radius: 10px 10px 0 0; /* Top-left, top-right, bottom-right, bottom-left */
+    width: 820px;
+    font-weight: 600;
+    font-size: 20px;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+}
+
+.city h1 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 20px;
+    color: #fff;
+    padding: 10px;
+}
+
+.temperature {
+    font-weight: 500;
+    font-size: 97px;
+    margin-top: 10px; /* Adjust the margin-top value as needed */
+
+}
+
+.description {
+    margin: 0;
+    font-weight: 600;
+    font-size: 24px;
+    color: #fff;
+}
+
+.minmax {
+    margin: 0;
+    font-weight: 600;
+    font-size: 24px;
+    color: #fff;
+}

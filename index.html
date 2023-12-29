@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Import Vue.js -->
+    <script src="https://unpkg.com/vue@3.0.11/dist/vue.global.js"></script>
+    
+    <!-- Import Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        
+    <!-- Import style.css -->
+    <link rel="stylesheet" href="Assets/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-..."
+    crossorigin="anonymous" />
+    <title>Weather App</title>
+</head>
+
+<body>
+    <div id="app">
+        
+        <div class="header">
+        
+            <div class="search-bar">
+                <div class="search-container">
+                    <input type="text" id="cityInput" placeholder="Search City" v-model="searchedCity" @keydown.enter="searchWeather">
+                    <i id="searchIcon" class="fas fa-search" @click="searchWeather"></i>
+                </div>
+            </div>
+    
+            <div class="navbar">
+                <a href="#" @click="switchToDailyForecast">Today</a>
+                <a href="#" @click="switchToWeeklyForecast">Weekly</a>
+                <a href="#" onclick="showPage('monthly'); getMonthlyWeather()">Monthly</a>
+            </div>
+
+            <div class="forecast-section">
+                <div v-if="loading">Loading...</div>
+                <div v-else>
+                    <div v-if="error">{{ error }}</div>
+                    <div v-if="weatherData && !showWeeklyForecast">
+                        <!-- Daily Forecast -->
+                        <h1 class="city">{{ getFullLocation() }} As of {{ getCurrentTime() }}</h1>
+                        <span class="temperature">{{ weatherData.main.temp }}°</span>
+                        <p class="description">{{ weatherData.weather[0].description }}</p>
+                        <p class="minmax">Day: {{ weatherData.main.temp_max }}°C • Night: {{ weatherData.main.temp_min }}°C</p>
+                    </div>
+                    <div v-if="weatherData && showWeeklyForecast">
+                        <!-- Weekly Forecast -->
+                        <h1 class="city">Weekly Forecast for {{ getFullLocation() }}</h1>
+                        <div v-if="weatherData.weeklyWeatherData && weatherData.weeklyWeatherData[weatherData.name]">
+                            <div v-for="(forecast, date) in weatherData.weeklyWeatherData[weatherData.name]" :key="date">
+                                <p>
+                                    {{ date }} - 
+                                    {{ forecast && forecast[0] && forecast[0].main && forecast[0].main.temp !== undefined ? forecast[0].main.temp + '°C' : 'N/A' }}
+                                </p>
+                                <!-- Add other relevant forecast information -->
+                            </div>
+                        </div>
+                        <div v-else>
+                            <p>No weekly weather data available for {{ weatherData.name }}</p>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Import Js -->
+    <script src="./app.js"></script>
+
+    <!-- Mount App -->
+    <script>
+        const mountedApp = app.mount('#app');
+    </script>
+</body>
+
+</html>
