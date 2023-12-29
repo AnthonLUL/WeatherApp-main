@@ -14,6 +14,36 @@ const app = Vue.createApp({
         };
     },
     methods: { 
+        processWeeklyWeatherData(apiResponse) {
+            // Extract the list of forecasts from the API response
+            const forecastList = apiResponse.list;
+        
+            // Create an object to store the processed data
+            const processedData = {};
+        
+            // Group the forecasts by day
+            forecastList.forEach((forecast) => {
+                // Extract the date from the forecast timestamp
+                const date = new Date(forecast.dt * 1000);
+                
+                // Format the date as a string in the 'YYYY-MM-DD' format
+                const formattedDate = date.toISOString().split('T')[0];
+        
+                // If the date is not already a key in processedData, create an array for it
+                if (!processedData[formattedDate]) {
+                    processedData[formattedDate] = [];
+                }
+        
+                // Add the relevant forecast information to the array for the date
+                processedData[formattedDate].push({
+                    time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    temperature: Math.round(forecast.main.temp),
+                    description: forecast.weather[0].description,
+                });
+            });
+        
+            return processedData;
+        },
         async getCurrentLocationWeather() {
             this.loading = true;
             this.error = null;
@@ -78,9 +108,9 @@ const app = Vue.createApp({
                 this.loading = false;        
             }
         },               
-        buildWeeklyWeatherApiUrl(city) {
-            const { name, countryCode } = city;
-            return `https://api.openweathermap.org/data/2.5/forecast?q=${name},${countryCode}&units=metric&appid=${this.openWeatherApiKey}`;        
+        buildWeeklyForecastUrl() {
+            const { name, countryCode } = this.weatherData;
+            return `https://api.openweathermap.org/data/2.5/forecast?q=${name},${countryCode}&units=metric&appid=${this.openWeatherApiKey}`;
         },
         buildWeatherApiUrl(city) {
             const { name, countryCode } = city;
@@ -136,48 +166,37 @@ const app = Vue.createApp({
             }
         },
    
-          // Updated method to fetch 5-day forecast for the current location
-          async switchToWeeklyForecast() {
-            try {
-                this.loading = true;
-                this.error = null;
-
-                // Fetch weekly forecast data for the current location
-                await this.fetchWeeklyForecast({
-                    name: this.weatherData.name,
-                    countryCode: this.weatherData.components.country_code,
-                });
-
+        switchToWeeklyForecast() {
+            if (this.weatherData && this.weatherData.name) {
                 this.showWeeklyForecast = true;
-            } catch (error) {
-                console.error('Error switching to weekly forecast:', error);
-                this.error = 'Error switching to weekly forecast.';
+                this.fetchWeeklyForecast();
+            } else {
+                console.error('Error switching to weekly forecast: Weather data or name is not available.');
             }
-        }, 
+        },
         buildDailyForecastApiUrl(city) {
             const { name, countryCode } = city;
             return `https://api.openweathermap.org/data/2.5/forecast?q=${name},${countryCode}&units=metric&appid=${this.openWeatherApiKey}`;
         },
-        async fetchWeeklyForecast(city) {
+        async fetchWeeklyForecast() {
             try {
-                const response = await axios.get(this.buildWeeklyWeatherApiUrl(city));
+                const response = await axios.get(this.buildWeeklyForecastUrl());
+                this.weatherData.weeklyWeatherData = this.processWeeklyWeatherData(response.data);
                 console.log('Weekly Forecast API Response:', response.data);
-        
-                // Check if this.weatherData has the weeklyWeatherData property
-                if (!this.weatherData.weeklyWeatherData) {
-                    this.weatherData.weeklyWeatherData = {};
-                }
-        
-                // Assuming you want to store data for each city
-                const processedData = this.groupForecastByDay(response.data.list);
-                this.weatherData.weeklyWeatherData = { [city.name]: processedData };
                 console.log('Processed Weekly Weather Data:', this.weatherData.weeklyWeatherData);
             } catch (error) {
-                console.error('Error fetching weekly forecast data:', error);
-                this.error = 'Error fetching weekly forecast data.';
-            } finally {
-                this.loading = false;
+                console.error('Error fetching weekly forecast:', error);
+                this.error = 'Error fetching weekly forecast. Please try again later.';
             }
+        },
+        formatDay(dateString) {
+            const date = new Date(dateString);
+            const options = { weekday: 'short', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        },
+        formatTemperature(temperature) {
+            // You can add additional formatting if needed
+            return Math.round(temperature);
         },
         async searchWeather(event) {
             // Check if the pressed key is Enter (key code 13)

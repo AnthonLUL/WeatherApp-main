@@ -46,14 +46,15 @@
                         <p class="description">{{ weatherData.weather[0].description }}</p>
                         <p class="minmax">Day: {{ weatherData.main.temp_max }}°C • Night: {{ weatherData.main.temp_min }}°C</p>
                     </div>
+                    <!-- Weekly Forecast -->
                     <div v-if="weatherData && showWeeklyForecast">
-                        <!-- Weekly Forecast -->
                         <h1 class="city">Weekly Forecast for {{ getFullLocation() }}</h1>
-                        <div v-if="weatherData.weeklyWeatherData && weatherData.weeklyWeatherData[weatherData.name]">
-                            <div v-for="(forecast, date) in weatherData.weeklyWeatherData[weatherData.name]" :key="date">
-                                <p>
-                                    {{ date }} - 
-                                    {{ forecast && forecast[0] && forecast[0].main && forecast[0].main.temp !== undefined ? forecast[0].main.temp + '°C' : 'N/A' }}
+                        <div v-if="weatherData.weeklyWeatherData">
+                            <div v-for="(forecast, date) in weatherData.weeklyWeatherData" :key="date">
+                                <p v-if="forecast.length > 0">
+                                    {{ formatDay(date) }} - 
+                                    {{ forecast[0].temperature }}°C - 
+                                    {{ forecast[0].description }}
                                 </p>
                                 <!-- Add other relevant forecast information -->
                             </div>
