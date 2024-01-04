@@ -40,27 +40,40 @@
                             <div class="col-md-12">    
                                 <!-- Header Row -->
                                 <div class="header">
+                                <!-- Navbar -->
+                                <div class="navbar justify-content-center align-items-center">
+                                    <a href="#" @click="switchToDailyForecast" class="mx-3">Today</a>
+                                    <a href="#" @click="switchToWeeklyForecast" class="mx-3">Weekly</a>
+                                    <a href="#" @click="" class="mx-3">Monthly</a>
+
+                                    <!-- Toggle Unit Button and Options Container -->
+                                    <div class="toggle-unit-container">
+                                        <button class="toggle-unit-button" style="outline: none;" @click="toggleUnitMenu">
+                                            <!-- Add an icon for the menu, for example, using Font Awesome -->
+                                            <div class="fas fa-bars"></div>
+                                        </button>
+                                        <div class="unit-options" v-if="showUnitMenu">
+                                            <button @click="toggleUnit('metric')">Celsius</button>
+                                            <button @click="toggleUnit('imperial')">Fahrenheit</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                                 <!-- Search Bar -->
                                 <div class="search-bar">
                                     <div class="search-container">
-                                        <input type="text" id="cityInput" placeholder="Search City" v-model="searchedCity"
-                                            @keydown.enter="searchWeather">
-                                                <i id="searchIcon" class="fas fa-search" @click="searchWeather"></i>
-                                            </div>
-                                        </div>
-                                        <button class="toggleUnit"
-                                            @click="toggleUnit">{{ unit === 'metric' ? 'Toggle to Fahrenheit' : 'Toggle to Celsius' }}</button>
-
-                                        <!-- Navbar -->
-                                        <div class="navbar">
-                                            <a href="#" @click="switchToDailyForecast">Today</a>
-                                            <a href="#" @click="switchToWeeklyForecast">Weekly</a>
-                                            <a href="#" @click="">Monthly</a>
-                                        </div>
+                                        <input type="text" id="cityInput" placeholder="Search City" v-model="searchedCity" @keydown.enter="searchWeather">
+                                        <button class="search-button" @click="searchWeather">
+                                            <i class="fas fa-search"></i>
+                                        </button>
                                     </div>
+                                </div>
+
+                                </div>
                             </div>
                         </div>
-             
+        
 
                         <div class="row">
                             <div class="col-md-12">
@@ -69,7 +82,7 @@
                         <div class="container">
                             <div class="forecast-container text-center">
                                 <!-- Forecast Section Column -->
-                                <div class="forecast-section" v-if="!showWeeklyForecast">
+                                <div v-if="!showWeeklyForecast" class="forecast-section">
                                     <div v-if="loading">Loading...</div>
                                     <div v-else>
                                         <!-- Error Message -->
@@ -82,73 +95,72 @@
                                             <span class="temperature">{{ roundTemperature(weatherData.main.temp) }}°<span
                                                     v-if="unit === 'metric'">C</span><span
                                                     v-else>F</span></span>
-                                            <p class="minmax">Day: {{ weatherData.main.temp_max }}°<span
+                                            <p class="minmax">Day: {{ roundTemperature(weatherData.main.temp_max) }}°<span
                                                     v-if="unit === 'metric'">C</span><span
-                                                    v-else>F</span> • Night: {{ weatherData.main.temp_min }}°<span
+                                                    v-else>F</span> • Night: {{ roundTemperature(weatherData.main.temp_min) }}°<span
                                                     v-if="unit === 'metric'">C</span><span
                                                     v-else>F</span></p>
+                                        </div>
+
+                                        <div class="card-body p-4 border-top border-bottom mb-2">
+                                            <div class="row text-center justify-content-center">
+                                                <!-- Morning Card -->
+                                                <div class="forecast-card">
+                                                    <h2>Morning</h2>
+                                                    <p>{{ roundTemperature(morningTemperature) }}°<span v-if="unit === 'metric'">C</span><span
+                                                            v-else>F</span></p>
+                                                    <!-- Add other relevant morning forecast information -->
+                                                </div>
+
+                                                <!-- Afternoon Card -->
+                                                <div class="forecast-card">
+                                                    <h2>Afternoon</h2>
+                                                    <p>{{ roundTemperature(afternoonTemperature) }}°<span v-if="unit === 'metric'">C</span><span
+                                                            v-else>F</span></p>
+                                                    <!-- Add other relevant afternoon forecast information -->
+                                                </div>
+
+                                                <!-- Night Card -->
+                                                <div class="forecast-card">
+                                                    <h2>Night</h2>
+                                                    <p>{{ roundTemperature(nightTemperature) }}°<span v-if="unit === 'metric'">C</span><span
+                                                            v-else>F</span></p>
+                                                    <!-- Add other relevant night forecast information -->
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="card-body p-4 border-top border-bottom mb-2">
-                                    <div class="row text-center justify-content-center" >
-                                        <!-- Morning Card -->
-                                        <div class="forecast-card">
-                                            <h2>Morning</h2>
-                                            <p>{{ roundTemperature(morningTemperature) }}°<span v-if="unit === 'metric'">C</span><span
-                                                    v-else>F</span></p>
-                                            <!-- Add other relevant morning forecast information -->
+                            <!-- Weekly Forecast Section -->
+                            <div class="weekly-forecast" v-if="weatherData && showWeeklyForecast">
+                                <h1 class="city">6 day forecast {{ getFullLocation() }}</h1>
+                                <div v-for="(forecast, date) in weatherData.weeklyWeatherData" :key="date">
+                                    <div :class="{ 'day-card': true, 'expanded-card': expandedDays.includes(date) }">
+                                        <button class="btn btn-outline-info mb-2" @click="toggleDayExpansion(date)">
+                                            {{ formatDay(date) }} - {{ forecast[0].temperature }}°<span v-if="unit === 'metric'">C</span><spanv-else>F</span>
+                                        </button>
+                                        <div v-show="expandedDays.includes(date)">
+                                            <div v-if="forecast.length > 0" class="card text-white mb-3">
+                                                <div class="card-header">{{ formatDay(date) }}</div>
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ forecast[0].description }}</h5>
+                                                    <p class="card-text">
+                                                        Temperature: {{ forecast[0].temperature }}°<span v-if="unit === 'metric'">C</span><span
+                                                            v-else>F</span><br>
+                                                        High: {{ forecast[0].high }}°<span v-if="unit === 'metric'">C</span><span
+                                                            v-else>F</span> /
+                                                        Low: {{ forecast[0].low }}°<span v-if="unit === 'metric'">C</span><span v-else>F</span><br>
+                                                        Humidity: {{ forecast[0].humidity }}%<br>
+                                                        Wind: {{ forecast[0].windSpeed }} mph {{ forecast[0].windDirection }}
+                                                    </p>
+                                                    <!-- Add other relevant forecast information -->
+                                                </div>
+                                            </div>
                                         </div>
-
-                                        <!-- Afternoon Card -->
-                                        <div class="forecast-card">
-                                            <h2>Afternoon</h2>
-                                            <p>{{ roundTemperature(afternoonTemperature) }}°<span v-if="unit === 'metric'">C</span><span
-                                                    v-else>F</span></p>
-                                            <!-- Add other relevant afternoon forecast information -->
-                                        </div>
-
-                                        <!-- Night Card -->
-                                        <div class="forecast-card">
-                                            <h2>Night</h2>
-                                            <p>{{ roundTemperature(nightTemperature) }}°<span v-if="unit === 'metric'">C</span><span
-                                                    v-else>F</span></p>
-                                            <!-- Add other relevant night forecast information -->
-                                        </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Weekly Forecast Section -->
-                        <div class="weekly-forecast" v-if="weatherData && showWeeklyForecast">
-                            <h1 class="city">Weekly Forecast for {{ getFullLocation() }}</h1>
-                            <div v-for="(forecast, date) in weatherData.weeklyWeatherData" :key="date">
-                                <div :class="{ 'day-card': true, 'expanded-card': expandedDays.includes(date) }">
-                                    <button @click="toggleDayExpansion(date)"> {{ formatDay(date) }}</button>
-                                    <div v-show="expandedDays.includes(date)">
-                                        <p v-if="forecast.length > 0">
-                                            {{ formatDay(date) }} -
-                                            {{ forecast[0].description }}
-                                            <br>
-                                            Temperature: {{ forecast[0].temperature }}°<span
-                                                v-if="unit === 'metric'">C</span><span
-                                                v-else>F</span>
-                                            <br>
-                                            High: {{ forecast[0].high }}°<span v-if="unit === 'metric'">C</span><span
-                                                v-else>F</span>
-                                            / Low: {{ forecast[0].low }}°<span v-if="unit === 'metric'">C</span><span
-                                                v-else>F</span>
-                                            <br>
-                                            Humidity: {{ forecast[0].humidity }}%
-                                            <br>
-                                            Wind: {{ forecast[0].windSpeed }} mph {{ forecast[0].windDirection }}
-                                        </p>
-                                        <!-- Add other relevant forecast information -->
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </div>  
 
                         <!-- Map -->
                         <div id="map" style='width: 400px; height: 300px;'></div>

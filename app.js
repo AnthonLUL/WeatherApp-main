@@ -19,6 +19,7 @@ const app = Vue.createApp({
             nightTemperature: null,
             hourlyForecast: [],
             fetchCounter: 0,
+            showUnitMenu: false
         };
     },
     methods: { 
@@ -170,9 +171,9 @@ const app = Vue.createApp({
                 // Update morning, afternoon, and night temperatures
                 if (this.dailyForecast.list.length >= 3) {
                     // Ensure the structure of the data and adjust the property names accordingly
-                    this.morningTemperature = this.roundTemperature(this.convertTemperature(this.dailyForecast.list[0]?.main?.temp));
-                    this.afternoonTemperature = this.roundTemperature(this.convertTemperature(this.dailyForecast.list[1]?.main?.temp));
-                    this.nightTemperature = this.roundTemperature(this.convertTemperature(this.dailyForecast.list[2]?.main?.temp));
+                    this.morningTemperature = this.roundTemperature(this.dailyForecast.list[0]?.main?.temp);
+                    this.afternoonTemperature = this.roundTemperature(this.dailyForecast.list[1]?.main?.temp);
+                    this.nightTemperature = this.roundTemperature(this.dailyForecast.list[2]?.main?.temp);
         
                     // Log the temperature values to check if they are assigned correctly
                     console.log('Morning Temperature:', this.morningTemperature);
@@ -337,27 +338,43 @@ const app = Vue.createApp({
             }
         },
         // Function to toggle between Celsius and Fahrenheit
-        // Function to toggle between Celsius and Fahrenheit
-    toggleUnit() {
-        this.unit = this.unit === 'metric' ? 'imperial' : 'metric';
-        if (this.weatherData && this.weatherData.main) {
-            // Update the temperature in the existing weatherData
-            this.weatherData.main.temp = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp));
-            this.weatherData.main.temp_max = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp_max));
-            this.weatherData.main.temp_min = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp_min));
-        }
-        // If you have weekly weather data, convert temperatures in it too
-        if (this.weatherData && this.weatherData.weeklyWeatherData) {
-            for (const date in this.weatherData.weeklyWeatherData) {
-                if (this.weatherData.weeklyWeatherData.hasOwnProperty(date)) {
-                    this.weatherData.weeklyWeatherData[date].forEach((forecast) => {
-                        forecast.temperature = this.roundTemperature(this.convertTemperature(forecast.temperature));
-                    });
+        toggleUnit(newUnit) {
+            if (this.unit !== newUnit) {
+                this.unit = newUnit;
+        
+                // Convert and update morning, afternoon, and night temperatures if they are available
+                if (this.morningTemperature !== null) {
+                    this.morningTemperature = this.roundTemperature(this.convertTemperature(this.morningTemperature));
+                }
+        
+                if (this.afternoonTemperature !== null) {
+                    this.afternoonTemperature = this.roundTemperature(this.convertTemperature(this.afternoonTemperature));
+                }
+        
+                if (this.nightTemperature !== null) {
+                    this.nightTemperature = this.roundTemperature(this.convertTemperature(this.nightTemperature));
+                }
+        
+                // Update the temperature in the existing weatherData
+                if (this.weatherData && this.weatherData.main) {
+                    this.weatherData.main.temp = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp));
+                    this.weatherData.main.temp_max = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp_max));
+                    this.weatherData.main.temp_min = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp_min));
+                }
+        
+                // If you have weekly weather data, convert temperatures in it too
+                if (this.weatherData && this.weatherData.weeklyWeatherData) {
+                    for (const date in this.weatherData.weeklyWeatherData) {
+                        if (this.weatherData.weeklyWeatherData.hasOwnProperty(date)) {
+                            this.weatherData.weeklyWeatherData[date].forEach((forecast) => {
+                                forecast.temperature = this.roundTemperature(this.convertTemperature(forecast.temperature));
+                            });
+                        }
+                    }
                 }
             }
-        }
-    },
-
+        },
+               
     // Function to convert temperature based on the selected unit
     convertTemperature(temperature) {
         if (this.unit === 'imperial') {
@@ -372,6 +389,10 @@ const app = Vue.createApp({
     roundTemperature(temperature) {
         return Math.round(temperature);
     },
+    toggleUnitMenu() {
+        this.showUnitMenu = !this.showUnitMenu;
+    },
+
     },
     async mounted() {
         try {

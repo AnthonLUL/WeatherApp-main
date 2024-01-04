@@ -1,3 +1,8 @@
+body {
+  padding-top: 100px; 
+  background-color: #1d1d23;
+}
+
 .selector-for-some-widget {
   box-sizing: content-box;
 }
@@ -16,10 +21,132 @@
   margin: 27px;
 }
 
+.mx-3{
+  padding-left: 200px;
+  padding-right: 200px;
+  border-right: 1px solid #29262c;
+  color: aliceblue;;
+
+}
 
 .bg-image{
   overflow: hidden;
   position: relative;
   background-size: cover;
   background-position: center;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #111315; /* You can adjust the background color */
+  padding: 20px;
+  z-index: 1000; /* Ensure it's on top of other elements */
+}
+
+.navbar a:focus {
+  color: #b148d2;
+}
+
+.toggle-unit-container {
+  position: relative;
+}
+
+.unit-options {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #ffffff; /* Set the background color */
+  border: 1px solid #dddddd; /* Add a border for separation */
+  border-radius: 5px; /* Optional: Add border-radius for rounded corners */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add box shadow for a subtle effect */
+  padding: 5px;
+}
+.unit-options-container {
+  position: relative;
+}
+
+.toggle-unit-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #b148d2;
+}
+
+.toggle-unit-button .fas.fa-bars {
+  font-size: 20px; /* Adjust the size as needed */
+}
+
+
+/* Remove blinking cursor from all elements */
+* {
+  caret-color: transparent;
+}
+
+.search-bar {
+  margin: 10px ;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #111315;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.3); /* Black background with 80% opacity */
+}
+
+#cityInput {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+  color: #fff; /* Text color */
+  background: transparent; /* Transparent background to let the container background show through */
+}
+
+.search-button {
+  background-color: rgba(177,72,210, 0.5); /* Adjusted color with 50% opacity */
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background-color: rgba(177,72,210, 0.8); /* Adjusted hover color with 80% opacity */
+}
+
+/* Custom style to change the background color of the forecast section */
+.weekly-forecast {
+  padding: 20px;
+}
+
+/* Custom style to change the text color of the city heading */
+.weekly-forecast .city {
+  color: #333; /* Change to your preferred text color */
+}
+
+/* Custom style to change the background color and text color of the day cards */
+.day-card {
+
+}
+
+/* Custom style to change the background color of the expanded card */
+.expanded-card {
+}
+
+/* Custom style to change the outline color of the day buttons */
+.day-card button {
+}
+
+/* Custom style to change the background color and text color of the forecast information */
+.card {
+  background-color: rgba(0, 0, 0, 0.3); /* Change the last value (0.8) for the desired opacity */
+  /* Other styles for the card */
 }
