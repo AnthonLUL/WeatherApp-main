@@ -8,9 +8,17 @@ const app = Vue.createApp({
             openCageApiUrl: 'https://api.opencagedata.com/geocode/v1/json',
             openWeatherApiKey: '52369564d2dc66c1fe013c20a839a624',
             openWeatherApiUrl: 'https://api.openweathermap.org/data/2.5/weather',
+            mapBoxApiKey: 'pk.eyJ1IjoiYW50aG9ubHVsIiwiYSI6ImNscXQ1bTBhZzQ3NHAydW1rMnBpcXVqYXYifQ.MNj2_esKLSXToDiEGK3byw',
             cities: [],
             searchedCity: '',
             showWeeklyForecast: false,
+            unit: 'metric',
+            expandedDays: [],
+            morningTemperature: null,
+            afternoonTemperature: null,
+            nightTemperature: null,
+            hourlyForecast: [],
+            fetchCounter: 0,
         };
     },
     methods: { 
@@ -44,13 +52,23 @@ const app = Vue.createApp({
         
             return processedData;
         },
+        formatHourlyForecast(hour) {
+            console.log('Hourly Forecast:', hour);
+            const date = new Date(hour.dt * 1000);
+            const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            const temperature = Math.round(hour.temp);
+    
+            return `${time}: ${temperature}°C, ${hour.weather[0].description}`;
+        },
         async getCurrentLocationWeather() {
             this.loading = true;
             this.error = null;
         
             try {
                 const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        timeout: 10000,
+                    });
                 });
         
                 const { latitude, longitude } = position.coords;
@@ -66,7 +84,9 @@ const app = Vue.createApp({
         
                 if (locationDetails && locationDetails.components) {
                     // Check if city is available in the response
-                    const city = locationDetails.components.city || locationDetails.components.town;
+                    const city =
+                        locationDetails.components.city ||
+                        locationDetails.components.town;
         
                     if (city) {
                         // Fetch weather data using the obtained location details
@@ -80,6 +100,8 @@ const app = Vue.createApp({
                             main: weatherResponse.data.main,
                             weather: weatherResponse.data.weather,
                             components: locationDetails.components, // Add components to weather data
+                            // Add the current temperature here
+                            currentTemperature: weatherResponse.data.main.temp,
                         };
                     } else {
                         this.error = 'City information not found in the geocoding response.';
@@ -93,8 +115,8 @@ const app = Vue.createApp({
                 this.error = 'Error fetching geolocation data.';
             } finally {
                 this.loading = false;
-            }        
-        },                 
+            }
+        },                                              
         async fetchWeatherData(city) {
             try {
                 const response = await axios.get(this.buildWeatherApiUrl(city));
@@ -141,13 +163,29 @@ const app = Vue.createApp({
             try {
                 const response = await axios.get(this.buildDailyForecastApiUrl(city));
                 this.dailyForecast = response.data;
+        
+                // Log the entire dailyForecast object to inspect its structure
+                console.log('Daily Forecast API Response:', this.dailyForecast);
+        
+                // Update morning, afternoon, and night temperatures
+                if (this.dailyForecast.list.length >= 3) {
+                    // Ensure the structure of the data and adjust the property names accordingly
+                    this.morningTemperature = this.roundTemperature(this.convertTemperature(this.dailyForecast.list[0]?.main?.temp));
+                    this.afternoonTemperature = this.roundTemperature(this.convertTemperature(this.dailyForecast.list[1]?.main?.temp));
+                    this.nightTemperature = this.roundTemperature(this.convertTemperature(this.dailyForecast.list[2]?.main?.temp));
+        
+                    // Log the temperature values to check if they are assigned correctly
+                    console.log('Morning Temperature:', this.morningTemperature);
+                    console.log('Afternoon Temperature:', this.afternoonTemperature);
+                    console.log('Night Temperature:', this.nightTemperature);
+                }
             } catch (error) {
                 console.error('Error fetching daily forecast data:', error);
                 this.error = 'Error fetching daily forecast data.';
             } finally {
                 this.loading = false;
             }
-        },        
+        },             
         async switchToDailyForecast() {
             try {
                 this.loading = true;
@@ -165,7 +203,6 @@ const app = Vue.createApp({
                 this.error = 'Error switching to daily forecast.';
             }
         },
-   
         switchToWeeklyForecast() {
             if (this.weatherData && this.weatherData.name) {
                 this.showWeeklyForecast = true;
@@ -216,14 +253,54 @@ const app = Vue.createApp({
                         countryCode: '',  // Provide a country code if needed
                     }));
         
-                    this.weatherData = response.data;
+                    console.log('Search Weather API Response:', response.data);
+        
+                    let newWeatherData;
+        
+                    if (response.data.list) {
+                        // This is likely a response for weekly forecast, handle it accordingly
+                        newWeatherData = {
+                            name: response.data.city.name,
+                            weeklyWeatherData: this.processWeeklyWeatherData(response.data),
+                            components: response.data.city,  // Include city components
+                        };
+                    } else if (response.data.name) {
+                        // This is a response for current weather or daily forecast
+                        newWeatherData = response.data;
+                    } else {
+                        // Handle the case when the structure of the response is unexpected
+                        throw new Error('Unexpected API response structure');
+                    }
+        
+                    // Ensure that this is done after the response is processed
+                    this.weatherData = newWeatherData;
+                    this.showWeeklyForecast = !!newWeatherData.weeklyWeatherData;
+        
+                    // Log the extracted region, country, and city
+                    if (this.weatherData.components) {
+                        console.log('Region:', this.weatherData.components.state || this.weatherData.components.province || '');
+                        console.log('Country:', this.weatherData.sys.country);
+                        console.log('City:', this.weatherData.name);
+                    }
+        
+                    // Add this line to update the city information for daily forecast
+                    this.weatherData.name = newWeatherData.name;
                 } catch (error) {
+                    console.error('Error fetching weather data:', error);
                     this.error = 'Error fetching weather data.';
                 } finally {
                     this.loading = false;
                 }
             }
-        },
+        },    
+        toggleDayExpansion(date) {
+            // Toggle the expansion state for the clicked day
+            if (this.expandedDays.includes(date)) {
+                this.expandedDays = this.expandedDays.filter(day => day !== date);
+            } else {
+                this.expandedDays.push(date);
+            }
+        },            
         getCurrentTime() {
             const now = new Date();
             const hours = now.getHours().toString().padStart(2, '0');
@@ -237,32 +314,75 @@ const app = Vue.createApp({
                 return '';
             }
         
-            const { components } = this.weatherData;
+            const { name, components, sys } = this.weatherData;
         
-            if (!components) {
-                console.error('No components property in weatherData.');
+            if (components && sys) {
+                // Extract components for more detailed location information
+                const city = components.city || components.town || '';
+                const region = components.state || components.province || sys.region || '';
+                const country = components.country || sys.country || '';
+        
+                // Build the full location string
+                const fullLocation = [city, region, country].filter(Boolean).join(', ');
+        
+                console.log('Full location:', fullLocation);
+        
+                return fullLocation;
+            } else if (name) {
+                // If the response structure is for the current weather or daily forecast
+                return name;
+            } else {
+                console.error('No components property or name in weatherData.');
                 return '';
             }
-        
-            // Extract components for more detailed location information
-            const city = components.city || components.town || '';
-            const region = components.state || components.province || '';
-            const country = components.country || '';
-            const county = components.county || '';
-            const suburb = components.suburb || '';
-        
-            // Build the full location string
-            const fullLocation = `${city}, ${region}, ${country}`.trim().replace(/,+/g, ',');
-        
-            console.log('Full location:', fullLocation);
-        
-            return fullLocation;
-        }   
+        },
+        // Function to toggle between Celsius and Fahrenheit
+        // Function to toggle between Celsius and Fahrenheit
+    toggleUnit() {
+        this.unit = this.unit === 'metric' ? 'imperial' : 'metric';
+        if (this.weatherData && this.weatherData.main) {
+            // Update the temperature in the existing weatherData
+            this.weatherData.main.temp = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp));
+            this.weatherData.main.temp_max = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp_max));
+            this.weatherData.main.temp_min = this.roundTemperature(this.convertTemperature(this.weatherData.main.temp_min));
+        }
+        // If you have weekly weather data, convert temperatures in it too
+        if (this.weatherData && this.weatherData.weeklyWeatherData) {
+            for (const date in this.weatherData.weeklyWeatherData) {
+                if (this.weatherData.weeklyWeatherData.hasOwnProperty(date)) {
+                    this.weatherData.weeklyWeatherData[date].forEach((forecast) => {
+                        forecast.temperature = this.roundTemperature(this.convertTemperature(forecast.temperature));
+                    });
+                }
+            }
+        }
+    },
+
+    // Function to convert temperature based on the selected unit
+    convertTemperature(temperature) {
+        if (this.unit === 'imperial') {
+            // Convert Celsius to Fahrenheit
+            return (temperature * 9) / 5 + 32;
+        }
+        // Convert Fahrenheit to Celsius
+        return ((temperature - 32) * 5) / 9;
+    },
+
+    // Function to round temperature to whole number
+    roundTemperature(temperature) {
+        return Math.round(temperature);
+    },
     },
     async mounted() {
         try {
             // Automatically fetch weather for the user's current location
             await this.getCurrentLocationWeather();
+    
+            // Fetch the daily forecast data for the current location
+            await this.fetchDailyForecast({
+                name: this.weatherData.name,
+                countryCode: this.weatherData.components.country_code,
+            });
     
             // Fetch the list of cities from OpenWeatherMap without using geolocation
             const citiesResponse = await axios.get(
@@ -281,8 +401,8 @@ const app = Vue.createApp({
             this.error = 'Error fetching data.';
             this.loading = false;
         }
-    },    
+    },
+    
 });
 
-
-
+app.mount('#app');
