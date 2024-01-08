@@ -49,7 +49,6 @@
                                     <!-- Toggle Unit Button and Options Container -->
                                     <div class="toggle-unit-container">
                                         <button class="toggle-unit-button" style="outline: none;" @click="toggleUnitMenu">
-                                            <!-- Add an icon for the menu, for example, using Font Awesome -->
                                             <div class="fas fa-bars"></div>
                                         </button>
                                         <div class="unit-options" v-if="showUnitMenu">
@@ -95,9 +94,9 @@
                                             <span class="temperature">{{ roundTemperature(weatherData.main.temp) }}°<span
                                                     v-if="unit === 'metric'">C</span><span
                                                     v-else>F</span></span>
-                                            <p class="minmax">Day: {{ roundTemperature(weatherData.main.temp_max) }}°<span
+                                            <p class="minmax">High: {{ roundTemperature(weatherData.main.temp_max) }}°<span
                                                     v-if="unit === 'metric'">C</span><span
-                                                    v-else>F</span> • Night: {{ roundTemperature(weatherData.main.temp_min) }}°<span
+                                                    v-else>F</span> • Low: {{ roundTemperature(weatherData.main.temp_min) }}°<span
                                                     v-if="unit === 'metric'">C</span><span
                                                     v-else>F</span></p>
                                         </div>
@@ -109,7 +108,6 @@
                                                     <h2>Morning</h2>
                                                     <p>{{ roundTemperature(morningTemperature) }}°<span v-if="unit === 'metric'">C</span><span
                                                             v-else>F</span></p>
-                                                    <!-- Add other relevant morning forecast information -->
                                                 </div>
 
                                                 <!-- Afternoon Card -->
@@ -117,7 +115,6 @@
                                                     <h2>Afternoon</h2>
                                                     <p>{{ roundTemperature(afternoonTemperature) }}°<span v-if="unit === 'metric'">C</span><span
                                                             v-else>F</span></p>
-                                                    <!-- Add other relevant afternoon forecast information -->
                                                 </div>
 
                                                 <!-- Night Card -->
@@ -125,7 +122,6 @@
                                                     <h2>Night</h2>
                                                     <p>{{ roundTemperature(nightTemperature) }}°<span v-if="unit === 'metric'">C</span><span
                                                             v-else>F</span></p>
-                                                    <!-- Add other relevant night forecast information -->
                                                 </div>
                                             </div>
                                         </div>
@@ -138,7 +134,7 @@
                                 <div v-for="(forecast, date) in weatherData.weeklyWeatherData" :key="date">
                                     <div :class="{ 'day-card': true, 'expanded-card': expandedDays.includes(date) }">
                                         <button class="btn btn-outline-info mb-2" @click="toggleDayExpansion(date)">
-                                            {{ formatDay(date) }} - {{ forecast[0].temperature }}°<span v-if="unit === 'metric'">C</span><spanv-else>F</span>
+                                            {{ formatDay(date) }}: {{ forecast[0].temperature }}°<span v-if="unit === 'metric'">C</span><span v-else>F</span>
                                         </button>
                                         <div v-show="expandedDays.includes(date)">
                                             <div v-if="forecast.length > 0" class="card text-white mb-3">
@@ -154,7 +150,6 @@
                                                         Humidity: {{ forecast[0].humidity }}%<br>
                                                         Wind: {{ forecast[0].windSpeed }} mph {{ forecast[0].windDirection }}
                                                     </p>
-                                                    <!-- Add other relevant forecast information -->
                                                 </div>
                                             </div>
                                         </div>

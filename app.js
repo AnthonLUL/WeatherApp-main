@@ -238,7 +238,7 @@ const app = Vue.createApp({
         },
         async searchWeather(event) {
             // Check if the pressed key is Enter (key code 13)
-            if (event.keyCode === 13) {
+            if (event.keyCode === 13 || event.type === 'click') {
                 event.preventDefault();
         
                 if (!this.searchedCity) {
@@ -251,7 +251,7 @@ const app = Vue.createApp({
                 try {
                     const response = await axios.get(this.buildWeatherApiUrl({
                         name: this.searchedCity,
-                        countryCode: '',  // Provide a country code if needed
+                        countryCode: '',
                     }));
         
                     console.log('Search Weather API Response:', response.data);
@@ -259,14 +259,14 @@ const app = Vue.createApp({
                     let newWeatherData;
         
                     if (response.data.list) {
-                        // This is likely a response for weekly forecast, handle it accordingly
+                        // Response for weekly forecast
                         newWeatherData = {
                             name: response.data.city.name,
                             weeklyWeatherData: this.processWeeklyWeatherData(response.data),
-                            components: response.data.city,  // Include city components
+                            components: response.data.city,  
                         };
                     } else if (response.data.name) {
-                        // This is a response for current weather or daily forecast
+                        // Response for current weather or daily forecast
                         newWeatherData = response.data;
                     } else {
                         // Handle the case when the structure of the response is unexpected
